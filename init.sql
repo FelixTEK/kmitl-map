@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS locations (
     id SERIAL PRIMARY KEY,
-    building_name VARCHAR(100) DEFAULT 'อาคารจุฬาภรณ์ 1',
+    building_name VARCHAR(100) DEFAULT 'อาคารจุฬาภรณวลัยลักษณ์ 1',
     floor INT NOT NULL,
     room_number VARCHAR(20) NOT NULL,
     x_coord NUMERIC(5, 2) NOT NULL,

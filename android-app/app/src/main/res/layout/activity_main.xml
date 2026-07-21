@@ -11,7 +11,7 @@
         android:id="@+id/btnLoadMap"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="ดึงข้อมูลห้อง อาคารจุฬาภรณ์ 1"
+        android:text="ดึงข้อมูลห้อง อาคารจุฬาภรณวลัยลักษณ์ 1"
         android:textSize="18sp" />
 
     <!-- ปุ่มทดสอบเปิดหน้าเว็บ Hello World (Activity2) -->

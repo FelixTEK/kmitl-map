@@ -20,7 +20,7 @@
 
 ## Flow 1: ดึงข้อมูลตำแหน่งห้อง (Map Data)
 
-1. ผู้ใช้กดปุ่ม "ดึงข้อมูลห้อง อาคารจุฬาภรณ์ 1" ใน `MainActivity`
+1. ผู้ใช้กดปุ่ม "ดึงข้อมูลห้อง อาคารจุฬาภรณวลัยลักษณ์ 1" ใน `MainActivity`
 2. แอปสร้าง background thread ยิง `GET /api/locations` ไปที่ Backend (ผ่าน `10.0.2.2:3000` ในกรณีรันบน Emulator)
 3. Backend รับ request แล้วรัน `SELECT * FROM locations` บน PostgreSQL
 4. Backend ส่งผลลัพธ์กลับเป็น JSON array ของห้องทั้งหมด

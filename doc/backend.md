@@ -12,7 +12,7 @@ Backend สร้างด้วย [Elysia](https://elysiajs.com) รันบ�
 
 ```json
 [
-  { "id": 1, "building_name": "อาคารจุฬาภรณ์ 1", "floor": 1, "room_number": "101", "x_coord": "15.00", "y_coord": "20.50" }
+  { "id": 1, "building_name": "อาคารจุฬาภรณวลัยลักษณ์ 1", "floor": 1, "room_number": "101", "x_coord": "15.00", "y_coord": "20.50" }
 ]
 ```
 
@@ -41,7 +41,7 @@ Response:
 | Column | Type | Note |
 |---|---|---|
 | id | SERIAL PK | |
-| building_name | VARCHAR(100) | default `'อาคารจุฬาภรณ์ 1'` |
+| building_name | VARCHAR(100) | default `'อาคารจุฬาภรณวลัยลักษณ์ 1'` |
 | floor | INT | |
 | room_number | VARCHAR(20) | |
 | x_coord | NUMERIC(5,2) | ตำแหน่งบนแผนที่ |
@@ -74,6 +74,11 @@ Response:
    ```bash
    docker compose exec -T db psql -U ${DB_USER} -d ${DB_NAME} < migrations/001_rename_service_reports_to_issue_reports.sql
    ```
+
+เช่นเดียวกัน หากมีข้อมูลเดิมที่ยังใช้ชื่ออาคาร `"อาคารจุฬาภรณ์ 1"` ให้รัน [`migrations/002_rename_building_to_chulabhorn_walailak_1.sql`](../migrations/002_rename_building_to_chulabhorn_walailak_1.sql) เพื่ออัปเดต default และแถวข้อมูลเดิมเป็น `"อาคารจุฬาภรณวลัยลักษณ์ 1"`:
+```bash
+docker compose exec -T db psql -U ${DB_USER} -d ${DB_NAME} < migrations/002_rename_building_to_chulabhorn_walailak_1.sql
+```
 
 ## การรัน
 

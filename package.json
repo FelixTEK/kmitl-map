@@ -1,0 +1,12 @@
+{
+  "name": "kmitl-map-backend",
+  "version": "1.0.0",
+  "scripts": {
+    "start": "bun run src/index.ts"
+  },
+  "dependencies": {
+    "elysia": "latest",
+    "@elysiajs/cors": "latest",
+    "postgres": "latest"
+  }
+}

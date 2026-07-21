@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="24dp">
+
+    <!-- ปุ่มสำหรับสั่งโหลดข้อมูล -->
+    <Button
+        android:id="@+id/btnLoadMap"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="ดึงข้อมูลห้อง อาคารจุฬาภรณ์ 1"
+        android:textSize="18sp" />
+
+    <!-- ปุ่มทดสอบเปิดหน้าเว็บ Hello World (Activity2) -->
+    <Button
+        android:id="@+id/btnOpenActivity2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="ทดสอบหน้าเว็บ Hello World"
+        android:textSize="18sp" />
+
+    <!-- ============ ส่วนทดสอบระบบแจ้งปัญหา (Issue Report) ============ -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:text="ทดสอบแจ้งปัญหา"
+        android:textStyle="bold"
+        android:textSize="18sp" />
+
+    <!-- เลือกประเภทปัญหา: ของหาย / สิ่งอำนวยความสะดวกชำรุด / อื่นๆ -->
+    <Spinner
+        android:id="@+id/spinnerCategory"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp" />
+
+    <EditText
+        android:id="@+id/etDescription"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:hint="รายละเอียดปัญหา เช่น ทำกระเป๋าหายที่ห้อง 101"
+        android:inputType="textMultiLine"
+        android:minLines="2" />
+
+    <Button
+        android:id="@+id/btnSendReport"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="ส่งแจ้งปัญหา"
+        android:textSize="18sp" />
+
+    <!-- กล่องสำหรับแสดงผลข้อความ JSON เลื่อนขึ้นลงได้ -->
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="16dp">
+
+        <TextView
+            android:id="@+id/tvData"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="ผลลัพธ์จะแสดงที่นี่..."
+            android:textSize="16sp" />
+    </ScrollView>
+
+</LinearLayout>

@@ -1,59 +1,60 @@
 # สถาปัตยกรรมและการทำงานของระบบ (Architecture & Data Flow)
 
-เอกสารนี้อธิบายภาพรวมว่าแต่ละส่วนของระบบคุยกันอย่างไร ตั้งแต่แอป Android ไปจนถึงฐานข้อมูล
+เอกสารนี้อธิบายภาพรวมว่าแต่ละส่วนของระบบคุยกันอย่างไร **ตามสถานะปัจจุบัน** (อยู่ระหว่างเปลี่ยนจาก Android + Elysia เดิม มาเป็น Next.js `walkwe` เดี่ยว)
 
-## ภาพรวม
+## ภาพรวม (สถานะปัจจุบัน)
 
 ```
-┌─────────────────────┐        HTTP (JSON)        ┌──────────────────────┐        SQL        ┌──────────────────┐
-│   Android App        │ ─────────────────────────▶│   Backend API         │ ──────────────────▶│   PostgreSQL       │
-│  (Kotlin, MainActivity│                            │  (Bun + Elysia,       │                     │  (locations,       │
-│   / Activity2)        │◀───────────────────────── │   src/index.ts)       │◀────────────────────│   issue_reports)   │
-└─────────────────────┘        JSON response        └──────────────────────┘        rows          └──────────────────┘
+┌──────────────────────┐        SQL        ┌──────────────────┐
+│   walkwe (Next.js)     │ ──────────────────▶│   PostgreSQL       │
+│  frontend + API routes │◀────────────────────│  (locations,       │
+│  (app/api/report, ...) │        rows          │   issue_reports)   │
+└──────────────────────┘                      └──────────────────┘
+
+┌─────────────────────┐   HTTP (ไปยัง backend เดิมที่ไม่ได้รันใน compose แล้ว)
+│   Android App         │ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─▶  ⚠️ ใช้งานไม่ได้ตอนนี้
+│  (Legacy/Frozen)       │
+└─────────────────────┘
 ```
 
-- **Android App** เป็น client ฝั่งผู้ใช้ ยิง HTTP request ไปที่ Backend โดยตรง ไม่มีการเก็บ state หรือ cache ฝั่งแอป
-- **Backend API** เป็นตัวกลางเดียวที่คุยกับฐานข้อมูล รับ request จากแอป แปลงเป็น SQL query แล้วส่งผลลัพธ์กลับเป็น JSON
-- **PostgreSQL** เก็บข้อมูลสองเรื่องหลัก: ตำแหน่งห้อง (`locations`) และเรื่องแจ้งปัญหา (`issue_reports`)
+- **`walkwe`** (Next.js) เป็นทั้ง frontend และ backend ในตัวเดียว — React component เรียก API route ของตัวเอง (`app/api/...`) ซึ่งคุยกับ PostgreSQL ตรงผ่าน [`lib/db.js`](../walkwe/lib/db.js) ไม่มี backend แยกอีกต่อไปสำหรับส่วนนี้
+- **`android-app`** (Kotlin) เป็น client เดิมที่ยิง HTTP ไปที่ backend เดิม (`src/index.ts`, Bun/Elysia) — แต่ตั้งแต่ `docker-compose.yml` เปลี่ยนไปรัน service `walkwe` แทน service `app` เดิม **backend นั้นไม่ได้ถูกรันโดยอัตโนมัติแล้ว** แอป Android จึงเชื่อมต่อไม่ได้จนกว่าจะมีคนรัน `src/index.ts` แยกเอง (ดู [backend-legacy.md](backend-legacy.md)) — โปรเจกต์นี้ตั้งใจเลิกใช้ android-app แล้ว ไม่ได้อยู่ในแผนแก้ไขต่อ
 
-ทั้งระบบรันผ่าน Docker Compose (ดู [backend.md](backend.md)) ยกเว้น Android App ที่รันแยกบนเครื่อง/emulator ของผู้ใช้
+ทั้งระบบ (`db` + `walkwe`) รันผ่าน Docker Compose เดียวกัน (ดู [walkwe.md](walkwe.md))
 
-## Flow 1: ดึงข้อมูลตำแหน่งห้อง (Map Data)
-
-1. ผู้ใช้กดปุ่ม "ดึงข้อมูลห้อง อาคารจุฬาภรณวลัยลักษณ์ 1" ใน `MainActivity`
-2. แอปสร้าง background thread ยิง `GET /api/locations` ไปที่ Backend (ผ่าน `10.0.2.2:3000` ในกรณีรันบน Emulator)
-3. Backend รับ request แล้วรัน `SELECT * FROM locations` บน PostgreSQL
-4. Backend ส่งผลลัพธ์กลับเป็น JSON array ของห้องทั้งหมด
-5. แอปแสดงผล JSON ดิบใน `tvData` (ยังไม่แปลงเป็นแผนที่ภาพจริง — ดู [android-app.md](android-app.md) ข้อควรทราบ)
-
-## Flow 2: แจ้งปัญหา (Issue Report)
+## Flow 1: แจ้งปัญหา (Issue Report) — ใช้งานได้จริงแล้ว
 
 ใช้สำหรับแจ้งของหาย, สิ่งอำนวยความสะดวกชำรุด, หรือปัญหาจิปาถะอื่น ๆ ภายในอาคาร
 
-1. ผู้ใช้เลือกประเภทปัญหาจาก `spinnerCategory` (`lost_item` / `facility` / `other`) และกรอกรายละเอียดใน `etDescription`
-2. กดปุ่ม "ส่งแจ้งปัญหา" — แอปสร้าง background thread ยิง `POST /api/reports` พร้อม JSON body `{ description, category }`
-3. Backend รับ request แล้ว `INSERT` ลงตาราง `issue_reports` (สถานะเริ่มต้นเป็น `pending`)
-4. Backend ตอบกลับ `{ success: true, message: "แจ้งปัญหาเรียบร้อย!" }`
-5. แอปแสดงผลลัพธ์และล้างช่องกรอกข้อความหากสำเร็จ
+1. ผู้ใช้กรอกฟอร์มใน [`ReportPage.jsx`](../walkwe/components/ReportPage.jsx): หัวเรื่อง, ประเภท (`ทั่วไป`/`อาคาร`/`แจ้งซ่อม`), รายละเอียด, และสถานที่ (คณะ → อาคาร → ชั้น → ห้อง)
+2. กด "ยืนยันการยื่นคำร้อง" — ฟอร์มยิง `POST /api/report` พร้อม JSON body แบบ flat object
+3. [`app/api/report/route.js`](../walkwe/app/api/report/route.js) validate แล้ว `INSERT` ลงตาราง `issue_reports` จริงผ่าน `lib/db.js` (gen `report_code` แบบ `"RPT-" + Date.now()`)
+4. Route ตอบกลับ object `report` ที่ map field กลับให้ตรงกับที่ `ReportPage.jsx` คาดหวัง (`report.id`, `report.location.{...}` ฯลฯ) เพื่อไม่ต้องแก้ frontend
+5. ฟอร์มแสดงเลขที่คำร้อง (`report.id` = `report_code`) แล้วเคลียร์ฟอร์ม
 
-รายละเอียด endpoint และ schema ทั้งหมดอยู่ใน [backend.md](backend.md)
+รายละเอียด endpoint และ schema เต็มอยู่ใน [walkwe.md](walkwe.md)
 
-## Flow 3: ทดสอบ WebView (Activity2)
+## Flow 2: แสดงแผนที่/ตำแหน่งห้อง — ยังไม่ต่อฐานข้อมูลจริง
 
-ใช้ตรวจสอบว่า WebView ทำงานได้ปกติในแอป โดยไม่ต้องพึ่งพา backend/เครือข่ายเลย:
+[`MapView.jsx`](../walkwe/components/MapView.jsx) ยังใช้ข้อมูล node/location บางส่วนแบบ **hardcode จาก `mapConstants.js`** ยังไม่มี `GET /api/locations` ใน `walkwe` ที่ query ตาราง `locations` จริง (มีแผนสร้างใน session ถัดไป) — ตาราง `locations` ในฐานข้อมูลมีอยู่แล้วพร้อมใช้ (schema + seed data ใน `init.sql`) แต่ยังไม่มีโค้ดฝั่ง `walkwe` อ่านมันเลย
 
-1. ผู้ใช้กดปุ่ม "ทดสอบหน้าเว็บ Hello World" ใน `MainActivity`
-2. เปิด `Activity2` ซึ่งโหลดไฟล์ static `file:///android_asset/hello.html` ที่ bundle มากับ APK โดยตรง (ไม่มีการเรียกเครือข่าย)
+## Flow 3 (Legacy/ใช้งานไม่ได้ในปัจจุบัน): Android App ↔ Backend เดิม
+
+เดิมแอป Android เคยเรียก:
+- `GET /api/locations` — ดึงตำแหน่งห้อง
+- `POST /api/reports` — แจ้งปัญหา (schema แบบเก่า: `category`/`description`)
+
+ทั้งสอง endpoint นี้อยู่ใน `src/index.ts` (Bun + Elysia) ซึ่ง**ไม่ได้อยู่ใน `docker-compose.yml` แล้ว** และ schema ตาราง `issue_reports` ใน `init.sql` ก็เปลี่ยนไปเป็นแบบใหม่ (`report_code`, `subject`, `detail`, ...) ไม่ตรงกับที่ endpoint เดิมคาดหวังอีกต่อไป แอป Android นี้จึง**ใช้งานไม่ได้ในสภาพปัจจุบัน** และไม่มีแผนแก้ไขต่อ (ดู [android-app.md](android-app.md))
 
 ## เหตุผลของการออกแบบที่สำคัญ
 
-- **แอปยิง API ตรงจาก client** — เหมาะกับสเกลปัจจุบัน (โปรเจกต์เรียน/prototype) ยังไม่มี authentication หรือ business logic ฝั่งแอป ทุกอย่างอยู่ที่ backend
-- **`10.0.2.2` แทน `localhost`** — เพราะ Android Emulator รัน network namespace แยกจากเครื่อง host การใช้ `localhost` ในแอปจะหมายถึงตัว emulator เอง ไม่ใช่เครื่องที่รัน Docker
-- **แยก `issue_reports` ออกจาก `locations`** — เพราะเป็นคนละ domain (ข้อมูลอ้างอิงสถานที่ vs. transactional record ที่ผู้ใช้สร้างขึ้น) และมี lifecycle ต่างกัน (`status: pending → ...`)
-- **`category` เป็น optional พร้อม default `'other'`** — ให้ client เก่าที่ไม่ส่ง `category` มายังทำงานได้โดยไม่ error
+- **ย้ายมาเป็น Next.js เดี่ยว (`walkwe`)** — รวม frontend + backend ไว้ที่เดียว ลดความซับซ้อนของการ deploy เทียบกับเดิมที่มี Android client + Bun/Elysia backend แยกกัน
+- **คง response shape เดิมของ `POST /api/report` ไว้** — เพื่อไม่ต้องแก้ `ReportPage.jsx` เลย แม้ schema ฐานข้อมูลข้างในจะเปลี่ยนไปมาก
+- **`report_code` แยกจาก `id` (SERIAL)** — `id` เป็น PK ภายในของ DB ส่วน `report_code` เป็นเลขที่อ้างอิงที่ผู้ใช้เห็น/ใช้ค้นหาได้ ไม่ผูกกับลำดับแถวจริงในตาราง
 
-## ที่ยังไม่มีในระบบ (Out of Scope ปัจจุบัน)
+## ที่ยังไม่มี/ยังไม่เสร็จในระบบ (Out of Scope ปัจจุบัน)
 
 - ไม่มีการยืนยันตัวตนผู้ใช้ (authentication/authorization)
-- ไม่มีหน้าจอแสดงแผนที่จริง (แสดงแค่ raw JSON)
-- ไม่มีการอัปเดตสถานะ `issue_reports` (เช่น เปลี่ยนจาก `pending` เป็น `resolved`) จากฝั่งแอป
+- `GET /api/locations` ใน `walkwe` ยังไม่ถูกสร้าง — `MapView.jsx` ยังใช้ hardcode data
+- ไม่มีการอัปเดตสถานะ `issue_reports` (เช่น เปลี่ยนจาก `pending` เป็น `resolved`) จากฝั่ง frontend
+- `src/index.ts` (Elysia), `Dockerfile` เดิมที่ root, และ `android-app/` ยังไม่ถูกลบออกจากโปรเจกต์ (รอทดสอบ `walkwe` ผ่านก่อนตามแผน cleanup)

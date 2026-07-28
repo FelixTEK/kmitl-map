@@ -1,4 +1,8 @@
-# Android App
+# Android App (Legacy/Frozen)
+
+> ⚠️ **โปรเจกต์นี้เลิกใช้แอป Android แล้ว** ไม่มีแผนแก้ไขหรือพัฒนาต่อ เอกสารนี้เก็บไว้อ้างอิงเท่านั้น ระบบหลักตอนนี้คือ [walkwe](walkwe.md) (Next.js)
+>
+> แอปนี้ **ใช้งานไม่ได้ในสภาพปัจจุบัน** เพราะ backend ที่มันเรียก (`src/index.ts`, Bun/Elysia) ไม่ได้ถูกรันอัตโนมัติใน `docker-compose.yml` แล้ว (แทนที่ด้วย service `walkwe`) และ schema ฐานข้อมูล (`init.sql`) ก็เปลี่ยนไปเป็นแบบใหม่ที่ไม่ตรงกับ endpoint เดิมที่แอปนี้เรียกอีกต่อไป ดู [architecture.md](architecture.md) Flow 3
 
 โปรเจกต์: `android-app/` — แอป Android เขียนด้วย Kotlin, package `com.felixtek.kmitlmappilot`
 
@@ -46,7 +50,7 @@ cd android-app
 ## ข้อควรทราบ
 
 - แอปนี้ยังเป็นเวอร์ชันทดลอง (prototype): แสดง raw JSON เท่านั้น ยังไม่มีการแสดงผลเป็นแผนที่จริง หรือ UI ที่ผ่านการออกแบบสำหรับผู้ใช้จริง
-- ต้องรัน backend (ดู [backend.md](backend.md)) ผ่าน Docker บนเครื่องเดียวกับที่รัน Emulator ก่อนกดปุ่มดึงข้อมูล
+- ⚠️ ปุ่มดึงข้อมูล/แจ้งปัญหาในแอปนี้จะ**ใช้งานไม่ได้**ในสภาพปัจจุบัน เพราะ backend เดิม (ดู [backend-legacy.md](backend-legacy.md)) ไม่ได้ถูกรันใน `docker-compose.yml` แล้ว และ schema DB เปลี่ยนไปไม่ตรงกับที่แอปนี้คาดหวัง
 
 ## Troubleshooting: Build ไม่ผ่าน (jlink executable does not exist)
 

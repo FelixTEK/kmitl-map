@@ -18,14 +18,16 @@ services:
       timeout: 5s
       retries: 5
 
-  app:
-    build: .
-    container_name: kmitl_bun_api
+  walkwe:
+    build: ./walkwe
+    container_name: kmitl_walkwe
     restart: unless-stopped
     ports:
       - "3000:3000"
     environment:
       - DATABASE_URL=postgres://${DB_USER}:${DB_PASSWORD}@db:5432/${DB_NAME}
+      - ORS_API_KEY=${ORS_API_KEY}
+      - TYPHOON_API_KEY=${TYPHOON_API_KEY}
     depends_on:
       db:
         condition: service_healthy

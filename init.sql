@@ -9,9 +9,19 @@ CREATE TABLE IF NOT EXISTS locations (
 
 CREATE TABLE IF NOT EXISTS issue_reports (
     id SERIAL PRIMARY KEY,
-    category VARCHAR(30) NOT NULL DEFAULT 'other',
-    description TEXT NOT NULL,
-    status VARCHAR(20) DEFAULT 'pending',
+    report_code VARCHAR(30) UNIQUE,
+    reporter_name VARCHAR(100),
+    subject VARCHAR(255) NOT NULL,
+    type VARCHAR(30) NOT NULL DEFAULT 'ทั่วไป'
+        CHECK (type IN ('ทั่วไป', 'อาคาร', 'แจ้งซ่อม')),
+    detail TEXT NOT NULL,
+    faculty VARCHAR(100),
+    building VARCHAR(100),
+    floor VARCHAR(20),
+    room VARCHAR(20),
+    status VARCHAR(20) DEFAULT 'pending'
+        CHECK (status IN ('pending', 'in_progress', 'resolved')),
+    report_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 

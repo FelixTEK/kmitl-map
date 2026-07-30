@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(\"/c/Program Files/Android/Android Studio/jbr/bin/java\" -version)",
+      "Bash(ls \"/c/Program Files/Android/Android Studio/jbr/bin/\" | grep -i jlink)",
+      "Bash(./gradlew --stop)",
+      "Bash(./gradlew assembleDebug --no-configuration-cache)",
+      "Bash(./gradlew assembleDebug)"
+    ]
+  }
+}
